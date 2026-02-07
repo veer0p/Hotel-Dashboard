@@ -9,6 +9,7 @@ import {
   BookingSourceData,
   RecentActivity,
   Notification,
+  DecorationOrder,
 } from '@/types/hotel';
 
 // Mock Rooms
@@ -616,6 +617,34 @@ export const mockDecorationPackages: DecorationPackage[] = [
     setupTime: 3,
     isActive: true,
     showOnWebsite: true,
+  },
+];
+
+// Mock Decoration Orders
+export const mockDecorationOrders: DecorationOrder[] = [
+  {
+    id: 'order-1',
+    bookingId: 'booking-2',
+    packageId: 'deco-1',
+    roomId: 'room-5',
+    date: '2026-01-25',
+    status: 'setup-complete',
+  },
+  {
+    id: 'order-2',
+    bookingId: 'booking-8',
+    packageId: 'deco-2',
+    roomId: 'room-9',
+    date: '2026-01-27',
+    status: 'pending',
+  },
+  {
+    id: 'order-3',
+    bookingId: 'booking-1',
+    packageId: 'deco-3',
+    roomId: 'room-2',
+    date: '2026-01-20',
+    status: 'delivered',
   },
 ];
 
