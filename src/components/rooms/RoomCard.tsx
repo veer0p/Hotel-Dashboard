@@ -1,131 +1,185 @@
-import React from 'react';
-import { Users, Maximize, Bed, Eye, Edit, MoreVertical } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import RoomStatusBadge from './RoomStatusBadge';
-import { Room } from '@/types/hotel';
+"use client";
+
+import { Box, Typography, Tooltip, Chip } from "@mui/material";
+import { Room } from "@/data/mockFloorPlanData";
+import { memo, MouseEvent } from "react";
+import { User, Wrench, Sparkles } from "lucide-react";
 
 interface RoomCardProps {
-  room: Room;
-  onView: (id: string) => void;
-  onEdit: (id: string) => void;
+    room: Room;
+    isSelected?: boolean;
+    onClick: (room: Room) => void;
+    onContextMenu: (event: MouseEvent<HTMLDivElement>, room: Room) => void;
 }
 
-const amenityIcons: Record<string, string> = {
-  wifi: '📶',
-  tv: '📺',
-  ac: '❄️',
-  minibar: '🍾',
-  safe: '🔐',
-  balcony: '🏞️',
-  jacuzzi: '🛁',
-  'sea-view': '🌊',
-  'private-pool': '🏊',
-  workspace: '💼',
+const statusConfig = {
+    vacant: {
+        bg: '#10B981',
+        border: '#059669',
+        text: '#ffffff',
+        label: 'Vacant',
+    },
+    occupied: {
+        bg: '#8B5CF6',
+        border: '#7C3AED',
+        text: '#ffffff',
+        label: 'Occupied',
+    },
+    dirty: {
+        bg: '#F59E0B',
+        border: '#D97706',
+        text: '#ffffff',
+        label: 'Needs Cleaning',
+    },
+    maintenance: {
+        bg: '#EF4444',
+        border: '#DC2626',
+        text: '#ffffff',
+        label: 'Maintenance',
+    },
 };
 
-const RoomCard: React.FC<RoomCardProps> = ({ room, onView, onEdit }) => {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+const RoomCardComponent = ({ room, isSelected, onClick, onContextMenu }: RoomCardProps) => {
+    const config = statusConfig[room.status];
 
-  return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-      <div className="relative h-48 bg-muted overflow-hidden">
-        <img
-          src={room.images[0] || '/placeholder.svg'}
-          alt={room.name}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <div className="absolute top-3 left-3">
-          <RoomStatusBadge status={room.status} />
-        </div>
-        <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1.5 font-semibold text-sm">
-          {room.roomNumber}
-        </div>
-      </div>
+    const getTooltipContent = () => {
+        if (room.status === 'occupied' && room.currentGuest) {
+            return `${room.currentGuest.name} • ${room.currentGuest.checkIn} to ${room.currentGuest.checkOut}`;
+        }
+        if (room.status === 'dirty') {
+            return `Needs cleaning • Last cleaned: ${room.lastCleaned || 'N/A'}`;
+        }
+        if (room.status === 'maintenance') {
+            return 'Under maintenance';
+        }
+        return `Available • ${room.type} • $${room.rate}/night`;
+    };
 
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="font-semibold text-lg">{room.name}</h3>
-            <p className="text-sm text-muted-foreground capitalize">{room.type}</p>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onView(room.id)}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(room.id)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Room
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+    const getStatusIcon = () => {
+        switch (room.status) {
+            case 'occupied':
+                return <User size={14} />;
+            case 'maintenance':
+                return <Wrench size={14} />;
+            case 'dirty':
+                return <Sparkles size={14} />;
+            default:
+                return null;
+        }
+    };
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Bed className="h-4 w-4" />
-            <span className="capitalize">{room.bedType}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Users className="h-4 w-4" />
-            <span>{room.maxGuests}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Maximize className="h-4 w-4" />
-            <span>{room.size}m²</span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-1">
-          {room.amenities.slice(0, 5).map((amenity) => (
-            <span
-              key={amenity}
-              className="text-sm bg-muted px-2 py-0.5 rounded"
-              title={amenity}
+    return (
+        <Tooltip title={getTooltipContent()} arrow placement="top">
+            <Box
+                onClick={() => onClick(room)}
+                onContextMenu={(e) => onContextMenu(e, room)}
+                sx={{
+                    width: 90,
+                    height: 90,
+                    borderRadius: 1.5,
+                    border: '3px solid',
+                    borderColor: isSelected ? '#3B82F6' : config.border,
+                    bgcolor: config.bg,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 0.5,
+                    cursor: 'pointer',
+                    position: 'relative',
+                    transition: 'all 0.2s ease',
+                    boxShadow: isSelected ? '0 10px 15px -3px rgb(0 0 0 / 0.2)' : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                    transform: isSelected ? 'scale(1.05)' : 'scale(1)',
+                    '&:hover': {
+                        transform: 'scale(1.05)',
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    },
+                    '&:active': {
+                        transform: 'scale(0.98)',
+                    },
+                }}
             >
-              {amenityIcons[amenity] || '✓'}
-            </span>
-          ))}
-          {room.amenities.length > 5 && (
-            <span className="text-sm text-muted-foreground">
-              +{room.amenities.length - 5}
-            </span>
-          )}
-        </div>
+                {/* Status Icon */}
+                {getStatusIcon() && (
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: 4,
+                            right: 4,
+                            color: config.text,
+                            opacity: 0.8,
+                        }}
+                    >
+                        {getStatusIcon()}
+                    </Box>
+                )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div>
-            <span className="text-xl font-bold text-primary">
-              {formatCurrency(room.basePrice)}
-            </span>
-            <span className="text-sm text-muted-foreground"> /night</span>
-          </div>
-          <Button size="sm" onClick={() => onView(room.id)}>
-            View Details
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+                {/* Room Type Badge */}
+                {room.type === 'suite' && (
+                    <Chip
+                        label="Suite"
+                        size="small"
+                        sx={{
+                            position: 'absolute',
+                            top: 4,
+                            left: 4,
+                            height: 16,
+                            fontSize: '9px',
+                            fontWeight: 700,
+                            bgcolor: 'rgba(255, 255, 255, 0.3)',
+                            color: config.text,
+                            '& .MuiChip-label': {
+                                px: 0.5,
+                            },
+                        }}
+                    />
+                )}
+
+                {/* Room Number */}
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
+                        color: config.text,
+                        fontSize: '18px',
+                        lineHeight: 1,
+                    }}
+                >
+                    {room.number}
+                </Typography>
+
+                {/* Guest Initials */}
+                {room.currentGuest && (
+                    <Typography
+                        variant="caption"
+                        sx={{
+                            color: config.text,
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            opacity: 0.9,
+                        }}
+                    >
+                        {room.currentGuest.initials}
+                    </Typography>
+                )}
+
+                {/* Rate */}
+                {room.status === 'vacant' && (
+                    <Typography
+                        variant="caption"
+                        sx={{
+                            color: config.text,
+                            fontSize: '10px',
+                            fontWeight: 500,
+                            opacity: 0.8,
+                        }}
+                    >
+                        ${room.rate}
+                    </Typography>
+                )}
+            </Box>
+        </Tooltip>
+    );
 };
 
-export default RoomCard;
+export const RoomCard = memo(RoomCardComponent);
