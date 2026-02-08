@@ -13,9 +13,11 @@ import {
     DragStartEvent
 } from "@dnd-kit/core";
 import { DraggableStaffCard } from "./DraggableStaffCard";
+import { StaffCard } from "./StaffCard";
 import { DroppableRoomCard } from "./DroppableRoomCard";
-import { mockRoomsData } from "@/data/mockFloorPlanData";
+import { mockRoomsData, Room } from "@/data/mockFloorPlanData";
 import { useState, useCallback, memo } from "react";
+import { ArrowLeft, Plus, Users, Filter } from "lucide-react";
 
 interface HousekeepingModeProps {
     onBack: () => void;

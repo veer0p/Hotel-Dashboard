@@ -19,7 +19,10 @@ export function GuestFolioContext({ folio }: GuestFolioContextProps) {
                         <CreditCard size={24} />
                     </Box>
                     <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{folio.guestName}</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{folio.guestName}</Typography>
+                            <Chip label="VIP" size="small" sx={{ height: 16, fontSize: '9px', fontWeight: 900, bgcolor: '#F59E0B', color: 'white' }} />
+                        </Box>
                         <Typography variant="caption" color="text.secondary">Room {folio.roomNumber} • Folio {folio.id}</Typography>
                     </Box>
                 </Box>
@@ -55,7 +58,10 @@ export function GuestFolioContext({ folio }: GuestFolioContextProps) {
                             <TrendingUp size={16} color="#3B82F6" />
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>Credit Limit</Typography>
                         </Box>
-                        <Typography variant="body2" sx={{ fontWeight: 800 }}>$2,500</Typography>
+                        <Box sx={{ textAlign: 'right' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 800 }}>$2,500</Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '9px' }}>Current Utilization: 13%</Typography>
+                        </Box>
                     </Box>
                 </Stack>
             </Paper>

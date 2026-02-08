@@ -2,16 +2,20 @@
 
 import { Box, Typography, Paper, Button, Skeleton } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, MouseEvent } from "react";
 import MainLayout from "@/layouts/MainLayout";
 import MetricCard from "@/components/dashboard/MetricCard";
 import RoomMiniCard from "@/components/dashboard/RoomMiniCard";
 import ScheduleTable from "@/components/dashboard/ScheduleTable";
-import { mockMetrics, mockRooms, mockSchedule } from "@/data/mockDashboardData";
+import RoomDetailSlideOver from "@/components/dashboard/RoomDetailSlideOver";
+import RoomContextMenu from "@/components/dashboard/RoomContextMenu";
+import { mockMetrics, mockRooms, mockSchedule, RoomStatus } from "@/data/mockDashboardData";
 import { Calendar, UserPlus, List } from "lucide-react";
 
 export default function DashboardNew() {
     const [loading, setLoading] = useState(true);
+    const [selectedRoom, setSelectedRoom] = useState<RoomStatus | null>(null);
+    const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number; room: RoomStatus } | null>(null);
 
     useEffect(() => {
         // Simulate initial data loading
@@ -20,6 +24,57 @@ export default function DashboardNew() {
         }, 500);
         return () => clearTimeout(timer);
     }, []);
+
+    const handleRoomClick = useCallback((room: RoomStatus) => {
+        setSelectedRoom(room);
+    }, []);
+
+    const handleRoomContextMenu = useCallback((event: MouseEvent<HTMLDivElement>, room: RoomStatus) => {
+        event.preventDefault();
+        setContextMenu(
+            contextMenu === null
+                ? {
+                    mouseX: event.clientX,
+                    mouseY: event.clientY,
+                    room,
+                }
+                : null,
+        );
+    }, [contextMenu]);
+
+    const handleContextMenuClose = useCallback(() => {
+        setContextMenu(null);
+    }, []);
+
+    const handleMarkClean = useCallback(() => {
+        console.log('Mark clean:', contextMenu?.room.roomNumber);
+    }, [contextMenu]);
+
+    const handleBlockMaintenance = useCallback(() => {
+        console.log('Block maintenance:', contextMenu?.room.roomNumber);
+    }, [contextMenu]);
+
+    const handleViewHistory = useCallback(() => {
+        console.log('View history:', contextMenu?.room.roomNumber);
+    }, [contextMenu]);
+
+    const getShiftContext = () => {
+        const hour = new Date().getHours();
+        if (hour >= 6 && hour < 14) return {
+            greeting: "Morning, Sarah",
+            focus: "Shift Focus: Breakfast service & Morning check-outs"
+        };
+        if (hour >= 14 && hour < 22) return {
+            greeting: "Afternoon Pulse",
+            focus: "Shift Focus: Peak check-ins & Room turnovers"
+        };
+        return {
+            greeting: "Night Watch",
+            focus: "Shift Focus: Audit reports & Late arrivals"
+        };
+    };
+
+    const shiftContext = getShiftContext();
 
     if (loading) {
         return (
@@ -55,10 +110,10 @@ export default function DashboardNew() {
                         fontFamily: 'Inter, sans-serif',
                     }}
                 >
-                    Today&apos;s Pulse
+                    {shiftContext.greeting}
                 </Typography>
                 <Typography color="text.secondary" sx={{ fontSize: '16px' }}>
-                    Real-time overview of your hotel operations
+                    {shiftContext.focus}
                 </Typography>
             </Box>
 
@@ -129,7 +184,12 @@ export default function DashboardNew() {
                     }}
                 >
                     {mockRooms.map((room) => (
-                        <RoomMiniCard key={room.roomNumber} room={room} />
+                        <RoomMiniCard
+                            key={room.roomNumber}
+                            room={room}
+                            onClick={handleRoomClick}
+                            onContextMenu={handleRoomContextMenu}
+                        />
                     ))}
                 </Box>
             </Paper>
@@ -179,6 +239,23 @@ export default function DashboardNew() {
 
                 <ScheduleTable scheduleItems={mockSchedule} />
             </Box>
+
+            {/* Interactive Components */}
+            <RoomDetailSlideOver
+                open={selectedRoom !== null}
+                onClose={() => setSelectedRoom(null)}
+                room={selectedRoom}
+            />
+
+            <RoomContextMenu
+                anchorEl={contextMenu ? { getBoundingClientRect: () => ({ top: contextMenu.mouseY, left: contextMenu.mouseX, right: contextMenu.mouseX, bottom: contextMenu.mouseY, width: 0, height: 0, x: contextMenu.mouseX, y: contextMenu.mouseY, toJSON: () => ({}) }) } as HTMLElement : null}
+                open={contextMenu !== null}
+                onClose={handleContextMenuClose}
+                roomStatus={contextMenu?.room.status || 'vacant'}
+                onMarkClean={handleMarkClean}
+                onBlockMaintenance={handleBlockMaintenance}
+                onViewHistory={handleViewHistory}
+            />
         </MainLayout>
     );
 }

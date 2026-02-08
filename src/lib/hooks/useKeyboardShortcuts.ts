@@ -6,12 +6,18 @@ import { useUIState } from "@/lib/ui-state-context";
 
 export function useKeyboardShortcuts() {
     const router = useRouter();
-    const { setIsCommandPaletteOpen, isCommandPaletteOpen, setActiveContext } = useUIState();
+    const { setIsCommandPaletteOpen, isCommandPaletteOpen, setActiveContext, setIsShortcutHelpOpen, isShortcutHelpOpen } = useUIState();
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             // Check for Cmd or Ctrl modifier
             const mod = e.metaKey || e.ctrlKey;
+
+            // Shortcut Help: ? (Shift + /)
+            if (e.key === "?" && !mod) {
+                e.preventDefault();
+                setIsShortcutHelpOpen(!isShortcutHelpOpen);
+            }
 
             // Cmd+K: Command Palette
             if (mod && e.key === "k") {
@@ -39,6 +45,7 @@ export function useKeyboardShortcuts() {
             // Escape: Close all / Clear selection
             if (e.key === "Escape") {
                 setIsCommandPaletteOpen(false);
+                setIsShortcutHelpOpen(false);
                 setActiveContext(null);
             }
 

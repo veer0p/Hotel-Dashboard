@@ -13,6 +13,9 @@ import SkipLink from "@/components/layout/SkipLink";
 import OfflineIndicator from "@/components/layout/OfflineIndicator";
 import { useTouchGestures } from "@/lib/hooks/useTouchGestures";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
+import { useRealTimePulse } from "@/lib/hooks/useRealTimePulse";
+import { useUIState } from "@/lib/ui-state-context";
+import ShortcutHelpDialog from "@/components/layout/ShortcutHelpDialog";
 
 // Lazy load non-critical components
 const CommandPalette = lazy(() => import("@/components/layout/CommandPalette"));
@@ -25,12 +28,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
     const isDesktop = useMediaQuery(theme.breakpoints.up("lg"));
+    const { isShortcutHelpOpen, setIsShortcutHelpOpen } = useUIState();
 
     // Activate touch gestures for mobile/tablet
     useTouchGestures();
 
     // Global keyboard shortcuts
     useKeyboardShortcuts();
+
+    // Simulation of real-time pulses
+    useRealTimePulse();
 
     return (
         <>
@@ -92,6 +99,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Offline Indicator */}
             <OfflineIndicator />
+
+            {/* Shortcut Help Dialog */}
+            <ShortcutHelpDialog
+                open={isShortcutHelpOpen}
+                onClose={() => setIsShortcutHelpOpen(false)}
+            />
         </>
     );
 }

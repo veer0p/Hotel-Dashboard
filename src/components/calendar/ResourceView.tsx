@@ -5,7 +5,7 @@ import { Reservation } from "@/lib/hooks/useCalendarState";
 import { Room } from "@/lib/hooks/useCalendarData";
 import { CalendarViewMode } from "@/lib/hooks/useCalendarState";
 import { format, eachDayOfInterval, startOfWeek, endOfWeek, differenceInDays, isSameDay, startOfDay, endOfDay } from "date-fns";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface ResourceViewProps {
     reservations: Reservation[];
@@ -35,10 +35,12 @@ interface DraggableReservationProps {
     position: { left: string; width: string };
     color: string;
     isSelected?: boolean;
+    isGroupHovered?: boolean;
     selectionMode?: "single" | "multiple";
     onToggleSelection?: (id: string) => void;
     onStatusChange?: (id: string, status: Reservation["status"]) => void;
     onSelect: (reservation: Reservation) => void;
+    onHover?: (groupId: string | undefined) => void;
 }
 
 function DraggableReservation({
@@ -46,10 +48,12 @@ function DraggableReservation({
     position,
     color,
     isSelected = false,
+    isGroupHovered = false,
     selectionMode = "single",
     onToggleSelection,
     onStatusChange,
-    onSelect
+    onSelect,
+    onHover,
 }: DraggableReservationProps) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: `reservation:${reservation.id}`,
@@ -79,6 +83,8 @@ function DraggableReservation({
             {...listeners}
             {...attributes}
             onClick={() => onSelect(reservation)}
+            onMouseEnter={() => reservation.groupId && onHover?.(reservation.groupId)}
+            onMouseLeave={() => onHover?.(undefined)}
             sx={{
                 position: "absolute",
                 top: "50%",
@@ -94,13 +100,15 @@ function DraggableReservation({
                 cursor: "pointer",
                 borderRadius: 1,
                 overflow: "hidden",
-                transition: "background-color 0.2s, transform 0.2s",
-                outline: isSelected ? `2px solid white` : "none",
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                outline: isSelected ? `2px solid white` : (isGroupHovered ? `2px solid #F59E0B` : "none"),
                 outlineOffset: -2,
+                boxShadow: isGroupHovered ? `0 0 15px ${alpha("#F59E0B", 0.5)}` : "none",
+                zIndex: isGroupHovered ? 10 : 1,
                 "&:hover": {
                     bgcolor: color,
                     transform: "translateY(-50%) scale(1.02)",
-                    zIndex: 2,
+                    zIndex: 11,
                     boxShadow: 3,
                 },
             }}
@@ -119,18 +127,26 @@ function DraggableReservation({
                     }}
                 />
             )}
-            <Typography
-                variant="caption"
-                sx={{
-                    fontWeight: 700,
-                    fontSize: 10,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                }}
-            >
-                {reservation.guestName}
-            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <Typography
+                    variant="caption"
+                    sx={{
+                        fontWeight: 700,
+                        fontSize: 10,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        lineHeight: 1
+                    }}
+                >
+                    {reservation.guestName}
+                </Typography>
+                {reservation.groupId && (
+                    <Typography variant="caption" sx={{ fontSize: 7, fontWeight: 900, opacity: 0.8, textTransform: 'uppercase' }}>
+                        Grp: {reservation.groupId}
+                    </Typography>
+                )}
+            </Box>
         </Paper>
     );
 }
@@ -181,6 +197,7 @@ export default function ResourceView({
     isLoading,
     dragDropHandlers,
 }: ResourceViewProps) {
+    const [hoveredGroupId, setHoveredGroupId] = useState<string | undefined>(undefined);
     const dateRange = useMemo(() => {
         return eachDayOfInterval({
             start: startOfWeek(selectedDate, { weekStartsOn: 1 }),
@@ -333,10 +350,12 @@ export default function ResourceView({
                                             position={position}
                                             color={color}
                                             isSelected={selectedReservationIds.includes(reservation.id)}
+                                            isGroupHovered={reservation.groupId === hoveredGroupId}
                                             selectionMode={selectionMode}
                                             onToggleSelection={onToggleSelection}
                                             onStatusChange={onStatusChange}
                                             onSelect={onSelectReservation}
+                                            onHover={setHoveredGroupId}
                                         />
                                     );
                                 })}

@@ -99,7 +99,9 @@ const generateFloorRooms = (floor: number, startRoom: number, count: number): Ro
                 checkIn: '2026-02-06',
                 checkOut: '2026-02-10',
             };
-            room.revenue = room.rate * 4; // 4 nights
+            if (room.rate) {
+                room.revenue = room.rate * 4; // 4 nights
+            }
         }
 
         // Add last cleaned time for dirty rooms

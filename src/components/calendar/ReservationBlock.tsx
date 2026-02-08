@@ -13,7 +13,8 @@ import {
     MenuItem,
     ListItemIcon,
     ListItemText,
-    Divider
+    Divider,
+    Tooltip
 } from "@mui/material";
 import {
     CheckCircleIcon,
@@ -21,7 +22,8 @@ import {
     XMarkIcon,
     ClipboardDocumentIcon,
     ArrowRightOnRectangleIcon,
-    ArrowLeftOnRectangleIcon
+    ArrowLeftOnRectangleIcon,
+    UsersIcon
 } from "@heroicons/react/24/outline";
 import { Reservation } from "@/lib/hooks/useCalendarState";
 import { DragMode } from "@/lib/hooks/useDragDrop";
@@ -48,7 +50,7 @@ const statusColors = {
 
 interface DraggableHandleProps {
     mode: DragMode;
-    reservation: Reservation; // Changed from reservationId: string
+    reservation: Reservation;
     style?: React.CSSProperties;
     children?: React.ReactNode;
 }
@@ -101,7 +103,7 @@ export default function ReservationBlock({
     onToggleSelection,
     onStatusChange
 }: ReservationBlockProps) {
-    const colors = statusColors[reservation.status as keyof typeof statusColors];
+    const colors = statusColors[reservation.status as keyof typeof statusColors] || statusColors.tentative;
     const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number } | null>(null);
 
     const handleContextMenu = (event: React.MouseEvent) => {
@@ -127,46 +129,85 @@ export default function ReservationBlock({
         onToggleSelection?.(reservation.id);
     };
 
-    if (!isDraggable) {
-        return (
-            <Paper
-                onClick={onClick}
-                onContextMenu={handleContextMenu}
+    const content = (
+        <Box sx={{ p: 2, pl: selectionMode === "multiple" ? 5 : 2, width: "100%" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                    {reservation.guestName}
+                </Typography>
+                {reservation.groupId && (
+                    <Tooltip title={`Group: ${reservation.groupId}`} arrow>
+                        <Chip
+                            icon={<UsersIcon className="w-3 h-3" />}
+                            label="Group"
+                            size="small"
+                            sx={{
+                                height: 18,
+                                fontSize: 9,
+                                fontWeight: 800,
+                                bgcolor: alpha("#F59E0B", 0.1),
+                                color: "#F59E0B",
+                                borderColor: alpha("#F59E0B", 0.2),
+                                border: "1px solid",
+                                "& .MuiChip-icon": { color: "inherit" }
+                            }}
+                        />
+                    </Tooltip>
+                )}
+            </Box>
+            <Chip
+                label={reservation.status}
+                size="small"
                 sx={{
-                    p: 2,
-                    cursor: "pointer",
-                    bgcolor: isSelected ? alpha(colors.bg, 0.2) : alpha(colors.bg, 0.1),
-                    borderLeft: 4,
-                    borderColor: colors.bg,
-                    outline: isSelected ? `2px solid ${colors.bg}` : "none",
-                    outlineOffset: -2,
+                    bgcolor: colors.bg,
+                    color: colors.text,
+                    fontWeight: 600,
+                    fontSize: 10,
+                    height: 20,
+                    textTransform: "capitalize",
+                    mb: 1
                 }}
-            >
-                {/* Content */}
-            </Paper>
-        );
-    }
+            />
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+                <Typography variant="caption" color="text.secondary">
+                    Room {reservation.roomNumber}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                    •
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                    {format(new Date(reservation.checkIn), "MMM d")} - {format(new Date(reservation.checkOut), "MMM d")}
+                </Typography>
+            </Box>
+
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                {reservation.ratePlan}
+            </Typography>
+        </Box>
+    );
+
+    const paperSx = {
+        position: "relative",
+        display: "flex",
+        bgcolor: isSelected ? alpha(colors.bg, 0.2) : alpha(colors.bg, 0.1),
+        borderLeft: 4,
+        borderColor: colors.bg,
+        transition: "all 0.2s",
+        overflow: "hidden",
+        outline: isSelected ? `2px solid ${colors.bg}` : "none",
+        outlineOffset: -2,
+        "&:hover": {
+            bgcolor: alpha(colors.bg, 0.25),
+            boxShadow: 2,
+        },
+    };
 
     return (
         <Paper
             onContextMenu={handleContextMenu}
-            sx={{
-                position: "relative",
-                display: "flex",
-                bgcolor: isSelected ? alpha(colors.bg, 0.2) : alpha(colors.bg, 0.1),
-                borderLeft: 4,
-                borderColor: colors.bg,
-                transition: "all 0.2s",
-                overflow: "hidden",
-                outline: isSelected ? `2px solid ${colors.bg}` : "none",
-                outlineOffset: -2,
-                "&:hover": {
-                    bgcolor: alpha(colors.bg, 0.25),
-                    boxShadow: 2,
-                },
-            }}
+            sx={paperSx}
         >
-            {/* Selection Checkbox (Visible in multiple mode or when hovered/selected) */}
             {selectionMode === "multiple" && (
                 <Box
                     onClick={handleCheckboxClick}
@@ -191,52 +232,22 @@ export default function ReservationBlock({
                 </Box>
             )}
 
-            {/* Left Resize Handle */}
-            <DraggableHandle mode="extend-start" reservation={reservation} />
-
-            {/* Main Content Area (Move Handle) */}
-            <DraggableHandle mode="move" reservation={reservation}>
-                <Box onClick={onClick} sx={{ p: 2, pl: selectionMode === "multiple" ? 5 : 2, width: "100%" }}>
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                            {reservation.guestName}
-                        </Typography>
-                        <Chip
-                            label={reservation.status}
-                            size="small"
-                            sx={{
-                                bgcolor: colors.bg,
-                                color: colors.text,
-                                fontWeight: 600,
-                                fontSize: 10,
-                                height: 20,
-                                textTransform: "capitalize",
-                            }}
-                        />
-                    </Box>
-
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
-                        <Typography variant="caption" color="text.secondary">
-                            Room {reservation.roomNumber}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                            •
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                            {format(reservation.checkIn, "MMM d")} - {format(reservation.checkOut, "MMM d")}
-                        </Typography>
-                    </Box>
-
-                    <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
-                        {reservation.ratePlan}
-                    </Typography>
+            {isDraggable ? (
+                <>
+                    <DraggableHandle mode="extend-start" reservation={reservation} />
+                    <DraggableHandle mode="move" reservation={reservation}>
+                        <Box onClick={onClick} sx={{ width: "100%" }}>
+                            {content}
+                        </Box>
+                    </DraggableHandle>
+                    <DraggableHandle mode="extend-end" reservation={reservation} />
+                </>
+            ) : (
+                <Box onClick={onClick} sx={{ width: "100%" }}>
+                    {content}
                 </Box>
-            </DraggableHandle>
+            )}
 
-            {/* Right Resize Handle */}
-            <DraggableHandle mode="extend-end" reservation={reservation} />
-
-            {/* Context Menu */}
             <Menu
                 open={contextMenu !== null}
                 onClose={handleClose}

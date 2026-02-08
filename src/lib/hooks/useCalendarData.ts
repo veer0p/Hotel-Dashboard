@@ -28,6 +28,9 @@ const generateMockReservations = (count: number): Reservation[] => {
         const checkOut = new Date(checkIn);
         checkOut.setDate(checkIn.getDate() + nights);
 
+        // Assign to a group occasionally (10% chance)
+        const groupId = Math.random() > 0.9 ? `GRP-${Math.floor(i / 5)}` : undefined;
+
         reservations.push({
             id: `RES-${1000 + i}`,
             guestName: guests[Math.floor(Math.random() * guests.length)],
@@ -39,6 +42,7 @@ const generateMockReservations = (count: number): Reservation[] => {
             ratePlan: ratePlans[Math.floor(Math.random() * ratePlans.length)],
             price: Math.floor(Math.random() * 200) + 100,
             nights,
+            groupId,
         });
     }
 

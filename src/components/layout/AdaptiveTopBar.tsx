@@ -123,6 +123,15 @@ export default function AdaptiveTopBar() {
         setUserAnchorEl(null);
     };
 
+    const getShift = () => {
+        const hour = currentTime.getHours();
+        if (hour >= 6 && hour < 14) return { label: "Morning Shift", color: "#F59E0B" };
+        if (hour >= 14 && hour < 22) return { label: "Afternoon Shift", color: "#3B82F6" };
+        return { label: "Night Shift", color: "#8B5CF6" };
+    };
+
+    const shift = getShift();
+
     return (
         <AppBar
             position="sticky"
@@ -179,17 +188,17 @@ export default function AdaptiveTopBar() {
                             {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </Typography>
                         <Chip
-                            label="Morning Shift"
+                            label={shift.label}
                             size="small"
                             sx={{
                                 ml: 1,
                                 height: 24,
                                 fontSize: 11,
                                 fontWeight: 600,
-                                bgcolor: alpha("#F59E0B", 0.1),
-                                color: "#F59E0B",
+                                bgcolor: alpha(shift.color, 0.1),
+                                color: shift.color,
                                 border: "1px solid",
-                                borderColor: alpha("#F59E0B", 0.2),
+                                borderColor: alpha(shift.color, 0.2),
                             }}
                         />
                     </Box>

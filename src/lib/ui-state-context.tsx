@@ -17,6 +17,8 @@ interface UIStateContextType {
     setActiveContext: (context: string | null) => void;
     property: string;
     setProperty: (property: string) => void;
+    isShortcutHelpOpen: boolean;
+    setIsShortcutHelpOpen: (open: boolean) => void;
 }
 
 const UIStateContext = createContext<UIStateContextType | undefined>(undefined);
@@ -26,6 +28,7 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
     const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [isShortcutHelpOpen, setIsShortcutHelpOpen] = useState(false);
 
     // Initialize theme from localStorage or system preference
     const [themeMode, setThemeMode] = useState<"light" | "dark">(() => {
@@ -69,6 +72,8 @@ export function UIStateProvider({ children }: { children: ReactNode }) {
                 setActiveContext,
                 property,
                 setProperty,
+                isShortcutHelpOpen,
+                setIsShortcutHelpOpen,
             }}
         >
             {children}
