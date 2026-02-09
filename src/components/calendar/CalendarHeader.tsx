@@ -106,12 +106,14 @@ export default function CalendarHeader({
                     <Button
                         onClick={() => onViewModeChange("month")}
                         variant={viewMode === "month" ? "contained" : "outlined"}
+                        sx={{ display: { xs: "none", sm: "block" } }}
                     >
                         Month
                     </Button>
                     <Button
                         onClick={() => onViewModeChange("resources")}
                         variant={viewMode === "resources" ? "contained" : "outlined"}
+                        sx={{ display: { xs: "none", sm: "block" } }}
                     >
                         Resources
                     </Button>

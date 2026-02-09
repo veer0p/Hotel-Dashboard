@@ -86,6 +86,8 @@ const ShortcutBadge = styled(Box)(({ theme }) => ({
     borderColor: alpha(theme.palette.divider, 0.1),
 }));
 
+import { useAuth } from "@/hooks/useAuth";
+
 export default function AdaptiveTopBar() {
     const {
         property,
@@ -96,6 +98,8 @@ export default function AdaptiveTopBar() {
         themeMode,
         setThemeMode
     } = useUIState();
+
+    const { user, signOut } = useAuth();
 
     const [currentTime, setCurrentTime] = useState(new Date());
     const [propertyAnchorEl, setPropertyAnchorEl] = useState<null | HTMLElement>(null);
@@ -123,6 +127,11 @@ export default function AdaptiveTopBar() {
         setUserAnchorEl(null);
     };
 
+    const handleLogout = async () => {
+        await signOut();
+        handleUserClose();
+    };
+
     const getShift = () => {
         const hour = currentTime.getHours();
         if (hour >= 6 && hour < 14) return { label: "Morning Shift", color: "#F59E0B" };
@@ -131,6 +140,10 @@ export default function AdaptiveTopBar() {
     };
 
     const shift = getShift();
+
+    // Get user display name or email
+    const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User";
+    const userRole = user?.user_metadata?.role || "Account Holder";
 
     return (
         <AppBar
@@ -278,10 +291,10 @@ export default function AdaptiveTopBar() {
                         >
                             <Box sx={{ textAlign: "right", display: { xs: "none", lg: "block" } }}>
                                 <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.2, color: "text.primary" }}>
-                                    Sarah Chen
+                                    {userDisplayName}
                                 </Typography>
                                 <Typography variant="caption" sx={{ fontWeight: 500, color: "text.secondary" }}>
-                                    Front Desk Manager
+                                    {userRole}
                                 </Typography>
                             </Box>
                             <Avatar
@@ -308,8 +321,8 @@ export default function AdaptiveTopBar() {
                             }}
                         >
                             <Box sx={{ px: 2, py: 1.5 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Sarah Chen</Typography>
-                                <Typography variant="caption" color="text.secondary">Front Desk Manager</Typography>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{userDisplayName}</Typography>
+                                <Typography variant="caption" color="text.secondary">{user?.email}</Typography>
                             </Box>
                             <Divider />
                             <MenuItem onClick={handleUserClose} sx={{ py: 1.2, gap: 1.5 }}>
@@ -338,7 +351,7 @@ export default function AdaptiveTopBar() {
                                 </Typography>
                             </MenuItem>
                             <Divider />
-                            <MenuItem onClick={handleUserClose} sx={{ py: 1.2, gap: 1.5, color: "error.main" }}>
+                            <MenuItem onClick={handleLogout} sx={{ py: 1.2, gap: 1.5, color: "error.main" }}>
                                 <ArrowRightOnRectangleIcon className="w-5 h-5" />
                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>Logout</Typography>
                             </MenuItem>

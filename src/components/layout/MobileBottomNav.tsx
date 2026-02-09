@@ -8,12 +8,13 @@ import {
     Squares2X2Icon,
     UsersIcon,
     PlusIcon,
+    TicketIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
 
 const navItems = [
     { label: "Home", icon: HomeIcon, path: "/" },
-    { label: "Calendar", icon: CalendarIcon, path: "/calendar" },
+    { label: "Check-in", icon: TicketIcon, path: "/checkin" },
     { icon: PlusIcon, path: "/add", isAction: true },
     { label: "Rooms", icon: Squares2X2Icon, path: "/rooms" },
     { label: "Guests", icon: UsersIcon, path: "/guest-profile" },

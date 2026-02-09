@@ -18,6 +18,11 @@ export const metadata: Metadata = {
 };
 
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
+import SkipLink from "@/components/layout/SkipLink";
+
+import { AuthProvider } from "@/contexts/AuthContext";
+
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function RootLayout({
   children,
@@ -27,18 +32,23 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
+        <SkipLink />
         <AppRouterCacheProvider>
-          <UIStateProvider>
-            <AppThemeProvider>
-              <ReactQueryProvider>
-                <SocketProvider>
-                  <ErrorBoundary>
-                    {children}
-                  </ErrorBoundary>
-                </SocketProvider>
-              </ReactQueryProvider>
-            </AppThemeProvider>
-          </UIStateProvider>
+          <AuthProvider>
+            <AuthGuard>
+              <UIStateProvider>
+                <AppThemeProvider>
+                  <ReactQueryProvider>
+                    <SocketProvider>
+                      <ErrorBoundary>
+                        {children}
+                      </ErrorBoundary>
+                    </SocketProvider>
+                  </ReactQueryProvider>
+                </AppThemeProvider>
+              </UIStateProvider>
+            </AuthGuard>
+          </AuthProvider>
         </AppRouterCacheProvider>
       </body>
     </html>

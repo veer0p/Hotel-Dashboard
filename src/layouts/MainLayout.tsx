@@ -9,7 +9,6 @@ import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import PullToRefresh from "@/components/layout/PullToRefresh";
-import SkipLink from "@/components/layout/SkipLink";
 import OfflineIndicator from "@/components/layout/OfflineIndicator";
 import { useTouchGestures } from "@/lib/hooks/useTouchGestures";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
@@ -41,7 +40,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <>
-            <SkipLink />
+
             <Box sx={{ display: "flex", minHeight: "100vh" }}>
                 {/* Sidebar Rail - Only for Desktop */}
                 {isDesktop && <SidebarRail />}

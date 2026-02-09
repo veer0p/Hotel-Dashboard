@@ -3,6 +3,7 @@
 import { Box, Typography, Paper, Button, Skeleton } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import { useState, useEffect, useCallback, MouseEvent } from "react";
+import { useRouter } from "next/navigation";
 import MainLayout from "@/layouts/MainLayout";
 import MetricCard from "@/components/dashboard/MetricCard";
 import RoomMiniCard from "@/components/dashboard/RoomMiniCard";
@@ -13,6 +14,7 @@ import { mockMetrics, mockRooms, mockSchedule, RoomStatus } from "@/data/mockDas
 import { Calendar, UserPlus, List } from "lucide-react";
 
 export default function DashboardNew() {
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [selectedRoom, setSelectedRoom] = useState<RoomStatus | null>(null);
     const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number; room: RoomStatus } | null>(null);
@@ -204,6 +206,7 @@ export default function DashboardNew() {
                         <Button
                             variant="contained"
                             startIcon={<UserPlus size={18} />}
+                            onClick={() => router.push('/checkin')}
                             sx={{
                                 textTransform: 'none',
                                 fontWeight: 600,

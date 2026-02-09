@@ -10,25 +10,24 @@ export default function OfflineIndicator() {
     const isOnline = useOnlineStatus();
     const { announce } = useAnnouncer();
     const [showOnlineMessage, setShowOnlineMessage] = useState(false);
+    const [wasOffline, setWasOffline] = useState(false);
 
     useEffect(() => {
         if (!isOnline) {
+            setWasOffline(true);
             announce("You are currently offline. Some features may be unavailable.", "assertive");
-        } else if (showOnlineMessage) {
+        } else if (wasOffline) {
+            setShowOnlineMessage(true);
             announce("Connection restored. You are back online.", "polite");
+            setWasOffline(false);
+
             // Auto-hide after 5 seconds
             const timer = setTimeout(() => {
                 setShowOnlineMessage(false);
             }, 5000);
             return () => clearTimeout(timer);
         }
-    }, [isOnline, announce, showOnlineMessage]);
-
-    useEffect(() => {
-        if (isOnline && !showOnlineMessage) {
-            setShowOnlineMessage(true);
-        }
-    }, [isOnline, showOnlineMessage]);
+    }, [isOnline, announce, wasOffline]);
 
     if (isOnline && !showOnlineMessage) return null;
 
@@ -38,7 +37,7 @@ export default function OfflineIndicator() {
                 elevation={8}
                 sx={{
                     position: "fixed",
-                    bottom: 24,
+                    bottom: { xs: 80, sm: 24 },
                     right: 24,
                     zIndex: 2000,
                     display: "flex",

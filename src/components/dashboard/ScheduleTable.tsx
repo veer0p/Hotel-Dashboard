@@ -10,6 +10,10 @@ import {
     Paper,
     Button,
     Chip,
+    useTheme,
+    useMediaQuery,
+    Box,
+    Typography,
 } from "@mui/material";
 import { ScheduleItem } from "@/data/mockDashboardData";
 
@@ -26,6 +30,61 @@ const actionColors = {
 } as const;
 
 export default function ScheduleTable({ scheduleItems, onActionClick }: ScheduleTableProps) {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    if (isMobile) {
+        return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {scheduleItems.map((item, index) => (
+                    <Paper
+                        key={index}
+                        elevation={0}
+                        sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                            <Box>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                                    {item.guest}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    {item.time}
+                                </Typography>
+                            </Box>
+                            <Chip
+                                label={item.room}
+                                size="small"
+                                sx={{
+                                    fontWeight: 600,
+                                    bgcolor: 'primary.50',
+                                    color: 'primary.main',
+                                }}
+                            />
+                        </Box>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            color={actionColors[item.action]}
+                            onClick={() => onActionClick?.(item)}
+                            sx={{
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                borderRadius: 1.5,
+                            }}
+                        >
+                            {item.actionLabel}
+                        </Button>
+                    </Paper>
+                ))}
+            </Box>
+        );
+    }
+
     return (
         <TableContainer
             component={Paper}

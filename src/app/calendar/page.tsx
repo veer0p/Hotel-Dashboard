@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, ToggleButtonGroup, ToggleButton, useTheme, useMediaQuery } from "@mui/material";
 import { CalendarIcon, ViewColumnsIcon } from "@heroicons/react/24/outline";
 import MainLayout from "@/layouts/MainLayout";
@@ -47,6 +47,13 @@ export default function CalendarPage() {
         filters,
         setFilters
     } = useCalendarState();
+
+    // Default to Day view on mobile
+    useEffect(() => {
+        if (isMobile) {
+            setViewMode('day');
+        }
+    }, [isMobile, setViewMode]);
 
     const { reservations, rooms, isLoading, updateReservation, addReservation } = useCalendarData(selectedDate, viewMode);
 
