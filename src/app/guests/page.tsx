@@ -42,8 +42,9 @@ import {
     BedDouble,
     TrendingUp
 } from "lucide-react";
-import { mockGuests, Guest } from "@/data/mockGuestData";
+import { useGuests } from "@/hooks/useGuests";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function GuestsPage() {
     const router = useRouter();
@@ -54,25 +55,30 @@ export default function GuestsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
 
-    // Stats Calculation
-    const stats = useMemo(() => {
-        const total = mockGuests.length;
-        const vip = mockGuests.filter(g => g.status === 'VIP').length;
-        const active = mockGuests.filter(g => g.currentContext?.status.includes('Arriving') || g.currentContext?.status.includes('In-House')).length; // impactful approximation
-        const newThisMonth = 4; // Mock data static for now
-        return { total, vip, active, newThisMonth };
-    }, []);
+    const { propertyId } = useAuth();
 
-    // Filter Logic
-    const filteredGuests = useMemo(() => {
-        return mockGuests.filter(guest => {
-            const matchesSearch =
-                guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                guest.email.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesStatus = statusFilter === 'all' || guest.status === statusFilter;
-            return matchesSearch && matchesStatus;
-        });
-    }, [searchQuery, statusFilter]);
+    const { guests, isLoading, error } = useGuests(propertyId || undefined, {
+        search: searchQuery,
+        loyalty_tier: statusFilter !== 'all' ? statusFilter as any : undefined
+    });
+
+    // Stats Calculation (Derived from real data)
+    const stats = useMemo(() => {
+        if (!guests) return { total: 0, vip: 0, active: 0, newThisMonth: 0 };
+        const total = guests.length;
+        const vip = guests.filter(g => g.loyalty_tier === 'platinum' || g.loyalty_tier === 'gold').length;
+        // In a real app, "active" might come from a different query or specific field
+        const active = 0;
+        const newThisMonth = guests.filter(g => {
+            const createdDate = new Date(g.created_at);
+            const now = new Date();
+            return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear();
+        }).length;
+        return { total, vip, active, newThisMonth };
+    }, [guests]);
+
+    // The hook 'useGuests' already handles search and tier filtering via API
+    const filteredGuests = guests || [];
 
     const handleGuestClick = (id: string) => {
         router.push(`/guests/${id}`);
@@ -226,17 +232,17 @@ export default function GuestsPage() {
                         >
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                                 <Stack direction="row" spacing={2} alignItems="center">
-                                    <Avatar src={guest.avatar} alt={guest.name} sx={{ width: 48, height: 48 }} />
+                                    <Avatar src={undefined} alt={`${guest.first_name} ${guest.last_name}`} sx={{ width: 48, height: 48 }} />
                                     <Box>
                                         <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                                            {guest.name}
+                                            {guest.first_name} {guest.last_name}
                                         </Typography>
                                         <Chip
-                                            label={guest.status}
+                                            label={guest.loyalty_tier || 'regular'}
                                             size="small"
                                             sx={{
-                                                bgcolor: getStatusColor(guest.status).bg,
-                                                color: getStatusColor(guest.status).color,
+                                                bgcolor: getStatusColor(guest.loyalty_tier || 'regular').bg,
+                                                color: getStatusColor(guest.loyalty_tier || 'regular').color,
                                                 fontWeight: 700,
                                                 height: 20,
                                                 fontSize: '0.7rem'
@@ -265,11 +271,11 @@ export default function GuestsPage() {
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Box>
                                     <Typography variant="caption" color="text.secondary">LTV</Typography>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>${guest.lifetimeValue.toLocaleString()}</Typography>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>₹0</Typography>
                                 </Box>
                                 <Box sx={{ textAlign: 'right' }}>
                                     <Typography variant="caption" color="text.secondary">Stays</Typography>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{guest.staysCount}</Typography>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>0</Typography>
                                 </Box>
                             </Box>
                         </Paper>
@@ -299,13 +305,13 @@ export default function GuestsPage() {
                                 >
                                     <TableCell>
                                         <Stack direction="row" spacing={2} alignItems="center">
-                                            <Avatar src={guest.avatar} alt={guest.name} />
+                                            <Avatar src={undefined} alt={`${guest.first_name} ${guest.last_name}`} />
                                             <Box>
                                                 <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                                    {guest.name}
+                                                    {guest.first_name} {guest.last_name}
                                                 </Typography>
                                                 <Typography variant="caption" color="text.secondary">
-                                                    ID: {guest.id}
+                                                    ID: {guest.id.substring(0, 8)}...
                                                 </Typography>
                                             </Box>
                                         </Stack>
@@ -318,23 +324,23 @@ export default function GuestsPage() {
                                     </TableCell>
                                     <TableCell>
                                         <Chip
-                                            label={guest.status}
+                                            label={guest.loyalty_tier || 'regular'}
                                             size="small"
                                             sx={{
-                                                bgcolor: getStatusColor(guest.status).bg,
-                                                color: getStatusColor(guest.status).color,
+                                                bgcolor: getStatusColor(guest.loyalty_tier || 'regular').bg,
+                                                color: getStatusColor(guest.loyalty_tier || 'regular').color,
                                                 fontWeight: 600
                                             }}
                                         />
                                     </TableCell>
                                     <TableCell align="right">
                                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                            {guest.staysCount}
+                                            0
                                         </Typography>
                                     </TableCell>
                                     <TableCell align="right">
                                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                            ${guest.lifetimeValue.toLocaleString()}
+                                            ₹0
                                         </Typography>
                                     </TableCell>
                                     <TableCell align="right">

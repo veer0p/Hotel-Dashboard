@@ -38,8 +38,8 @@ export function GuestFolioContext({ folio }: GuestFolioContextProps) {
                         sx={{ height: 8, borderRadius: 4, bgcolor: 'action.hover' }}
                     />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                        <Typography variant="caption" color="text.secondary">Paid: ${folio.paidAmount}</Typography>
-                        <Typography variant="caption" color="text.secondary">Due: ${folio.dueAmount}</Typography>
+                        <Typography variant="caption" color="text.secondary">Paid: ₹{folio.paidAmount}</Typography>
+                        <Typography variant="caption" color="text.secondary">Due: ₹{folio.dueAmount}</Typography>
                     </Box>
                 </Box>
 
@@ -59,7 +59,7 @@ export function GuestFolioContext({ folio }: GuestFolioContextProps) {
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>Credit Limit</Typography>
                         </Box>
                         <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="body2" sx={{ fontWeight: 800 }}>$2,500</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 800 }}>₹2,500</Typography>
                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '9px' }}>Current Utilization: 13%</Typography>
                         </Box>
                     </Box>
@@ -76,7 +76,7 @@ export function GuestFolioContext({ folio }: GuestFolioContextProps) {
                         <Box key={p.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 3, bgcolor: 'white' }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                                 <Typography variant="body2" sx={{ fontWeight: 700 }}>{p.method} •••• {p.last4}</Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 800 }}>- ${p.amount}</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 800 }}>- ₹{p.amount}</Typography>
                             </Box>
                             <Typography variant="caption" color="text.secondary">{p.date} • Authorized</Typography>
                         </Box>

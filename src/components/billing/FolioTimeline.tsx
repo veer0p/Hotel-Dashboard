@@ -164,7 +164,7 @@ export function FolioTimeline({ charges }: FolioTimelineProps) {
                                             </Box>
                                         </Box>
                                         <Box sx={{ textAlign: 'right' }}>
-                                            <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>${charge.amount.toFixed(2)}</Typography>
+                                            <Typography variant="h6" sx={{ fontWeight: 900, color: 'text.primary' }}>₹{charge.amount.toFixed(2)}</Typography>
                                             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Incl. Tax</Typography>
                                         </Box>
                                     </Box>

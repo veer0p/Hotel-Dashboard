@@ -140,7 +140,7 @@ export default function RoomDetailSlideOver({ open, onClose, room }: RoomDetailS
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="body2" color="text.secondary">Rate</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>$250/night</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>₹250/night</Typography>
                     </Box>
                 </Box>
 

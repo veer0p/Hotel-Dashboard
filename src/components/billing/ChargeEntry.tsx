@@ -41,7 +41,7 @@ export function ChargeEntry({ onAdd }: ChargeEntryProps) {
         // Match: [Quantity] [Item] to [Room] [Price (optional)]
         const qtyMatch = lowerVal.match(/(\d+)\s+([a-zA-Z\s]+?)(?:\s+to|\s+in|\s+for|$)/);
         const roomMatch = lowerVal.match(/(?:room\s+)?(\d{3})/);
-        const priceMatch = lowerVal.match(/\$(\d+)/);
+        const priceMatch = lowerVal.match(/₹(\d+)/);
 
         if (qtyMatch && (roomMatch || lowerVal.includes('current'))) {
             setParsed({
@@ -76,7 +76,7 @@ export function ChargeEntry({ onAdd }: ChargeEntryProps) {
         setIsScanning(true);
         setTimeout(() => {
             setIsScanning(false);
-            const mockExtracted = "Add 1 bottle of Champagne to room 412 $180";
+            const mockExtracted = "Add 1 bottle of Champagne to room 412 ₹180";
             setInput(mockExtracted);
             setParsed({
                 quantity: 1,
@@ -153,7 +153,7 @@ export function ChargeEntry({ onAdd }: ChargeEntryProps) {
                         <Box>
                             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Interpreted Charge</Typography>
                             <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                {parsed.quantity} × {parsed.item} (Room {parsed.room}) {parsed.price ? `- $${parsed.price * parsed.quantity}` : ''}
+                                {parsed.quantity} × {parsed.item} (Room {parsed.room}) {parsed.price ? `- ₹${parsed.price * parsed.quantity}` : ''}
                             </Typography>
                         </Box>
                     </Box>

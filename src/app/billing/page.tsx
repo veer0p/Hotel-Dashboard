@@ -81,7 +81,7 @@ export default function BillingFolioPage() {
                                 )}
                             </Box>
                             <Typography color="text.secondary">
-                                Room {folio.roomNumber} • Stay #{folio.reservationId} • Total: ${folio.totalAmount}
+                                Room {folio.roomNumber} • Stay #{folio.reservationId} • Total: ₹{folio.totalAmount}
                             </Typography>
                         </Box>
                     </Box>

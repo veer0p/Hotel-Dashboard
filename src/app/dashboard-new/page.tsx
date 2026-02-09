@@ -2,7 +2,7 @@
 
 import { Box, Typography, Paper, Button, Skeleton } from "@mui/material";
 import Grid from "@mui/material/Grid";
-import { useState, useEffect, useCallback, MouseEvent } from "react";
+import { useState, useEffect, useCallback, MouseEvent, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import MainLayout from "@/layouts/MainLayout";
 import MetricCard from "@/components/dashboard/MetricCard";
@@ -10,28 +10,30 @@ import RoomMiniCard from "@/components/dashboard/RoomMiniCard";
 import ScheduleTable from "@/components/dashboard/ScheduleTable";
 import RoomDetailSlideOver from "@/components/dashboard/RoomDetailSlideOver";
 import RoomContextMenu from "@/components/dashboard/RoomContextMenu";
-import { mockMetrics, mockRooms, mockSchedule, RoomStatus } from "@/data/mockDashboardData";
+import { useRooms } from "@/hooks/useRooms";
+import { useReservations } from "@/hooks/useReservations";
+import { useAuth } from "@/hooks/useAuth";
+import { format } from "date-fns";
 import { Calendar, UserPlus, List } from "lucide-react";
 
 export default function DashboardNew() {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
-    const [selectedRoom, setSelectedRoom] = useState<RoomStatus | null>(null);
-    const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number; room: RoomStatus } | null>(null);
+    const { user, propertyId } = useAuth();
 
-    useEffect(() => {
-        // Simulate initial data loading
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, []);
+    const { rooms, isLoading: roomsLoading } = useRooms(propertyId || undefined);
+    const { reservations, isLoading: reservationsLoading } = useReservations(propertyId || undefined, {
+        check_in_date_from: format(new Date(), 'yyyy-MM-dd'),
+        check_in_date_to: format(new Date(), 'yyyy-MM-dd'),
+    });
 
-    const handleRoomClick = useCallback((room: RoomStatus) => {
+    const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
+    const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number; room: any } | null>(null);
+
+    const handleRoomClick = useCallback((room: any) => {
         setSelectedRoom(room);
     }, []);
 
-    const handleRoomContextMenu = useCallback((event: MouseEvent<HTMLDivElement>, room: RoomStatus) => {
+    const handleRoomContextMenu = useCallback((event: MouseEvent<HTMLDivElement>, room: any) => {
         event.preventDefault();
         setContextMenu(
             contextMenu === null
@@ -60,10 +62,81 @@ export default function DashboardNew() {
         console.log('View history:', contextMenu?.room.roomNumber);
     }, [contextMenu]);
 
+    // Map real rooms to UI format
+    const mappedRooms = useMemo(() => {
+        if (!rooms) return [];
+        return rooms.map(room => ({
+            roomNumber: room.room_number,
+            status: room.status as any,
+            type: room.room_type?.name,
+            id: room.id
+        }));
+    }, [rooms]);
+
+    // Map real reservations to schedule items
+    const scheduleItems = useMemo(() => {
+        if (!reservations) return [];
+        return reservations.map(res => ({
+            time: format(new Date(res.created_at), 'h:mm a'),
+            guest: `Res: ${res.reservation_number}`,
+            room: res.room_id ? 'Assigned' : 'TBD',
+            action: res.status === 'confirmed' ? 'check-in' : 'check-out',
+            actionLabel: res.status === 'confirmed' ? 'Check-in' : 'Check-out'
+        }));
+    }, [reservations]);
+
+    // Calculate live metrics
+    const metrics = useMemo(() => {
+        const totalRooms = rooms?.length || 0;
+        const occupiedRooms = rooms?.filter(r => r.status === 'occupied').length || 0;
+        const occupancy = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+
+        const arrivals = reservations?.filter(r => r.status === 'confirmed').length || 0;
+        const departures = reservations?.filter(r => r.status === 'checked_in').length || 0;
+
+        // Calculate Revenue from confirmed/checked-in/checked-out reservations
+        const totalRevenue = reservations?.reduce((acc, res) => {
+            // Only count if it's a valid stay status
+            if (['confirmed', 'checked_in', 'checked_out'].includes(res.status)) {
+                return acc + (res.total_amount || 0);
+            }
+            return acc;
+        }, 0) || 0;
+
+        const formattedRevenue = `₹${totalRevenue.toLocaleString('en-IN')}`;
+
+        return [
+            {
+                label: "Occupancy",
+                value: `${occupancy}%`,
+                trend: 0,
+                trendDirection: 'neutral'
+            },
+            {
+                label: "Revenue",
+                value: formattedRevenue,
+                trend: 0,
+                trendDirection: 'neutral'
+            },
+            {
+                label: "Arrivals",
+                value: arrivals.toString(),
+                trend: 0,
+                trendDirection: 'neutral'
+            },
+            {
+                label: "Checkouts",
+                value: departures.toString(),
+                trend: 0,
+                trendDirection: 'neutral'
+            }
+        ];
+    }, [rooms, reservations]);
+
     const getShiftContext = () => {
         const hour = new Date().getHours();
         if (hour >= 6 && hour < 14) return {
-            greeting: "Morning, Sarah",
+            greeting: `Morning, ${user?.user_metadata?.first_name || 'Sarah'}`,
             focus: "Shift Focus: Breakfast service & Morning check-outs"
         };
         if (hour >= 14 && hour < 22) return {
@@ -78,7 +151,7 @@ export default function DashboardNew() {
 
     const shiftContext = getShiftContext();
 
-    if (loading) {
+    if (roomsLoading || reservationsLoading) {
         return (
             <MainLayout>
                 <Box sx={{ mb: 4 }}>
@@ -121,9 +194,9 @@ export default function DashboardNew() {
 
             {/* Metrics Section */}
             <Grid container spacing={3} sx={{ mb: 5 }}>
-                {mockMetrics.map((metric, index) => (
+                {metrics.map((metric, index) => (
                     <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
-                        <MetricCard metric={metric} />
+                        <MetricCard metric={metric as any} />
                     </Grid>
                 ))}
             </Grid>
@@ -185,14 +258,16 @@ export default function DashboardNew() {
                         },
                     }}
                 >
-                    {mockRooms.map((room) => (
+                    {mappedRooms.length > 0 ? mappedRooms.map((room) => (
                         <RoomMiniCard
                             key={room.roomNumber}
-                            room={room}
+                            room={room as any}
                             onClick={handleRoomClick}
                             onContextMenu={handleRoomContextMenu}
                         />
-                    ))}
+                    )) : (
+                        <Typography color="text.secondary">No rooms configured</Typography>
+                    )}
                 </Box>
             </Paper>
 
@@ -240,7 +315,7 @@ export default function DashboardNew() {
                     </Box>
                 </Box>
 
-                <ScheduleTable scheduleItems={mockSchedule} />
+                <ScheduleTable scheduleItems={scheduleItems as any} />
             </Box>
 
             {/* Interactive Components */}

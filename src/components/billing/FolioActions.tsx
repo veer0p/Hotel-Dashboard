@@ -14,8 +14,8 @@ export function FolioActions({ folio }: FolioActionsProps) {
             {/* Balance Summary */}
             <Paper elevation={0} sx={{ p: 3, bgcolor: '#1E293B', color: 'white', borderRadius: 4, boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
                 <Typography variant="caption" sx={{ opacity: 0.7, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>Current Balance</Typography>
-                <Typography variant="h3" sx={{ fontWeight: 900, my: 1 }}>${folio.dueAmount}</Typography>
-                <Typography variant="caption" sx={{ opacity: 0.6 }}>Total Folio: ${folio.totalAmount}</Typography>
+                <Typography variant="h3" sx={{ fontWeight: 900, my: 1 }}>₹{folio.dueAmount}</Typography>
+                <Typography variant="caption" sx={{ opacity: 0.6 }}>Total Folio: ₹{folio.totalAmount}</Typography>
 
                 <Divider sx={{ my: 2, borderColor: 'rgba(255,255,255,0.1)' }} />
 

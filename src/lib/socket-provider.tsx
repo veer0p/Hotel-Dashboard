@@ -20,9 +20,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        const socketInstance = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001", {
+        const socketInstance = io(process.env.NEXT_PUBLIC_SOCKET_URL || window.location.origin, {
             path: "/socket.io",
-            reconnectionAttempts: 5,
+            reconnectionAttempts: 3,
+            timeout: 5000,
         });
 
         socketInstance.on("connect", () => {

@@ -27,8 +27,10 @@ import {
     Calendar,
     Filter
 } from "lucide-react";
-import { mockGuests, Guest } from "@/data/mockGuestData";
+import { useReservations } from "@/hooks/useReservations";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CheckinPage() {
     const router = useRouter();
@@ -38,27 +40,52 @@ export default function CheckinPage() {
     const [tabValue, setTabValue] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
 
+    const { propertyId } = useAuth();
+
+    const {
+        reservations,
+        isLoading,
+        error,
+        checkIn,
+        checkOut,
+        isCheckingIn,
+        isCheckingOut
+    } = useReservations(propertyId || undefined, {
+        status: tabValue === 0 ? ['confirmed'] : ['checked_in'],
+    });
+
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setTabValue(newValue);
     };
 
-    // Filter Logic
-    const guests = useMemo(() => {
-        return mockGuests.filter(guest => {
-            const matchesSearch =
-                guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                guest.id.toLowerCase().includes(searchQuery.toLowerCase());
-
-            const isArriving = guest.currentContext?.status.includes('Arriving');
-            const isInHouse = guest.currentContext?.status.includes('In-House');
-
-            if (tabValue === 0) return matchesSearch && isArriving;
-            return matchesSearch && isInHouse; // Departures/In-House simplified for MVP
+    // Simple search filtering on the fetched data
+    const filteredReservations = useMemo(() => {
+        if (!reservations) return [];
+        return reservations.filter(res => {
+            // Note: reservations from backend should ideally include guest names
+            // For now, search matches reservation ID or number
+            return res.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                res.reservation_number.toLowerCase().includes(searchQuery.toLowerCase());
         });
-    }, [searchQuery, tabValue]);
+    }, [reservations, searchQuery]);
 
     const handleGuestClick = (id: string) => {
-        router.push(`/guests/${id}`);
+        router.push(`/reservations/${id}`);
+    };
+
+    const handleAction = async (e: React.MouseEvent, reservationId: string) => {
+        e.stopPropagation();
+        try {
+            if (tabValue === 0) {
+                await checkIn(reservationId);
+                alert('Checked in successfully');
+            } else {
+                await checkOut(reservationId);
+                alert('Checked out successfully');
+            }
+        } catch (err: any) {
+            alert(`Error: ${err.message}`);
+        }
     };
 
     return (
@@ -88,7 +115,7 @@ export default function CheckinPage() {
                     <Box sx={{ pb: 1, width: isMobile ? '100%' : 'auto' }}>
                         <TextField
                             size="small"
-                            placeholder="Guest name or ID..."
+                            placeholder="Reservation ID..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             InputProps={{
@@ -104,16 +131,20 @@ export default function CheckinPage() {
                 </Box>
 
                 <Box sx={{ minHeight: 400 }}>
-                    {guests.length === 0 ? (
+                    {isLoading ? (
+                        <Stack alignItems="center" justifyContent="center" sx={{ py: 10 }}>
+                            <Typography color="text.secondary">Loading reservations...</Typography>
+                        </Stack>
+                    ) : filteredReservations.length === 0 ? (
                         <Stack alignItems="center" justifyContent="center" sx={{ py: 10, color: 'text.secondary' }}>
                             <Filter size={48} strokeWidth={1} />
-                            <Typography sx={{ mt: 2 }}>No guests found matching your criteria</Typography>
+                            <Typography sx={{ mt: 2 }}>No reservations found matching your criteria</Typography>
                         </Stack>
                     ) : (
                         <Stack divider={<Divider />}>
-                            {guests.map((guest) => (
+                            {filteredReservations.map((res) => (
                                 <Box
-                                    key={guest.id}
+                                    key={res.id}
                                     sx={{
                                         p: 2,
                                         display: 'flex',
@@ -122,17 +153,19 @@ export default function CheckinPage() {
                                         cursor: 'pointer',
                                         '&:hover': { bgcolor: 'action.hover' }
                                     }}
-                                    onClick={() => handleGuestClick(guest.id)}
+                                    onClick={() => handleGuestClick(res.id)}
                                 >
                                     <Stack direction="row" spacing={2} alignItems="center">
-                                        <Avatar src={guest.avatar} alt={guest.name} sx={{ width: 48, height: 48, border: '2px solid', borderColor: 'primary.50' }} />
+                                        <Avatar src={undefined} alt={res.reservation_number} sx={{ width: 48, height: 48, border: '2px solid', borderColor: 'primary.50' }} />
                                         <Box>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{guest.name}</Typography>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                                {res.reservation_number}
+                                            </Typography>
                                             <Stack direction="row" spacing={1} alignItems="center">
-                                                <Typography variant="caption" color="text.secondary">#{guest.id}</Typography>
+                                                <Typography variant="caption" color="text.secondary">ID: {res.id.substring(0, 8)}...</Typography>
                                                 <Typography variant="caption" color="text.secondary">•</Typography>
                                                 <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                                                    {guest.currentContext?.status || 'Standard King'}
+                                                    {res.room_id ? 'Room Assigned' : 'Room Not Assigned'}
                                                 </Typography>
                                             </Stack>
                                         </Box>
@@ -145,7 +178,7 @@ export default function CheckinPage() {
                                                     {tabValue === 0 ? 'Arrival' : 'Departure'}
                                                 </Typography>
                                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                                    {tabValue === 0 ? 'Today, 2:00 PM' : 'Today, 11:00 AM'}
+                                                    {tabValue === 0 ? format(new Date(res.check_in_date), "MMM d") : format(new Date(res.check_out_date), "MMM d")}
                                                 </Typography>
                                             </Box>
                                         )}
@@ -153,6 +186,7 @@ export default function CheckinPage() {
                                         <Button
                                             variant="contained"
                                             size="small"
+                                            disabled={isCheckingIn || isCheckingOut}
                                             startIcon={tabValue === 0 ? <UserCheck size={16} /> : <LogOut size={16} />}
                                             sx={{
                                                 borderRadius: 2,
@@ -163,10 +197,7 @@ export default function CheckinPage() {
                                                     bgcolor: tabValue === 0 ? 'primary.dark' : 'error.dark',
                                                 }
                                             }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                // Handle check-in/out logic
-                                            }}
+                                            onClick={(e) => handleAction(e, res.id)}
                                         >
                                             {tabValue === 0 ? 'Check-in' : 'Check-out'}
                                         </Button>

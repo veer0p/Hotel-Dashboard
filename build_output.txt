@@ -1,0 +1,71 @@
+﻿
+> hotel-pms@0.1.0 build
+> next build && rm -rf dist && cp -r .next dist
+
+Ôû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 4.8s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/19) ...
+  Generating static pages using 11 workers (4/19) 
+  Generating static pages using 11 workers (9/19) 
+  Generating static pages using 11 workers (14/19) 
+Ô£ô Generating static pages using 11 workers (19/19) in 409.8ms
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî Ôùï /
+Ôö£ Ôùï /_not-found
+Ôö£ ãÆ /api/guests
+Ôö£ ãÆ /api/reservations
+Ôö£ ãÆ /api/reservations/[id]
+Ôö£ ãÆ /api/reservations/[id]/check-in
+Ôö£ ãÆ /api/reservations/[id]/check-out
+Ôö£ ãÆ /api/rooms
+Ôö£ Ôùï /auth
+Ôö£ Ôùï /auth/forgot-password
+Ôö£ Ôùï /auth/magic-link
+Ôö£ Ôùï /auth/sign-up
+Ôö£ Ôùï /auth/update-password
+Ôö£ Ôùï /billing
+Ôö£ Ôùï /calendar
+Ôö£ Ôùï /checkin
+Ôö£ Ôùï /dashboard-new
+Ôö£ Ôùï /guest-profile
+Ôö£ Ôùï /guests
+Ôö£ ãÆ /guests/[id]
+Ôöö Ôùï /rooms
+
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+
+node.exe : 'rm' is 
+not recognized as an 
+internal or external 
+command,
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: ('rm' is no   
+ t rec...ternal co    
+mmand,:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+operable program or 
+batch file.
