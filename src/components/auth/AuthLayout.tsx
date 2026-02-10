@@ -3,6 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 
+import { Hotel } from 'lucide-react';
+
 interface AuthLayoutProps {
     children: React.ReactNode;
     title: string;
@@ -14,8 +16,8 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
         <div id="main-content" className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-200">
             <div className="sm:mx-auto sm:w-full sm:max-width-md">
                 <div className="text-center">
-                    <h1 className="text-3xl font-extrabold text-blue-600 dark:text-blue-500 tracking-tight">
-                        🏨 PMS Pro
+                    <h1 className="text-3xl font-extrabold text-blue-600 dark:text-blue-500 tracking-tight flex items-center justify-center gap-2">
+                        <Hotel className="w-8 h-8" /> PMS Pro
                     </h1>
                     <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
                         Modern Hotel Management

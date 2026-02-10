@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Paper, Typography, alpha } from "@mui/material";
+import { AlertTriangle } from "lucide-react";
 import { DragState } from "@/lib/hooks/useDragDrop";
 import { format } from "date-fns";
 
@@ -70,8 +71,8 @@ export default function DragOverlay({ dragState }: DragOverlayProps) {
                         borderColor: alpha("#fff", 0.3),
                     }}
                 >
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: "error.light" }}>
-                        ⚠️ Invalid drop location
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: "error.light", display: "flex", alignItems: "center", gap: 0.5 }}>
+                        <AlertTriangle size={14} /> Invalid drop location
                     </Typography>
                 </Box>
             )}

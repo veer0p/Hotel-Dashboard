@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Box, Paper, TextField, Typography, Stack, Button, alpha, Chip } from "@mui/material";
-import { Sparkles, Zap, Image as ImageIcon, Check } from "lucide-react";
+import { Sparkles, Zap, Image as ImageIcon, Check, Coffee, Car, Wine, UtensilsCrossed, Clock } from "lucide-react";
 import { FolioCharge } from "@/data/mockFolioData";
 import { format } from "date-fns";
 
@@ -24,12 +24,12 @@ export function ChargeEntry({ onAdd }: ChargeEntryProps) {
     const [isScanning, setIsScanning] = useState(false);
 
     const quickItems = [
-        { label: 'Breakfast', icon: '🍳', category: 'food', price: 25 },
-        { label: 'Parking', icon: '🚗', category: 'parking', price: 35 },
-        { label: 'Mini-bar', icon: '🍾', category: 'bar', price: 12 },
-        { label: 'Room Service', icon: '🍽️', category: 'food', price: 45 },
-        { label: 'Late Checkout', icon: '⏰', category: 'room', price: 50 },
-        { label: 'Spa Service', icon: '💆', category: 'spa', price: 120 },
+        { label: 'Breakfast', icon: <Coffee size={20} />, category: 'food', price: 25 },
+        { label: 'Parking', icon: <Car size={20} />, category: 'parking', price: 35 },
+        { label: 'Mini-bar', icon: <Wine size={20} />, category: 'bar', price: 12 },
+        { label: 'Room Service', icon: <UtensilsCrossed size={20} />, category: 'food', price: 45 },
+        { label: 'Late Checkout', icon: <Clock size={20} />, category: 'room', price: 50 },
+        { label: 'Spa Service', icon: <Sparkles size={20} />, category: 'spa', price: 120 },
     ];
 
     const handleInputChange = (val: string) => {
@@ -205,7 +205,7 @@ export function ChargeEntry({ onAdd }: ChargeEntryProps) {
                                 '&:hover': { bgcolor: 'action.hover', borderColor: 'primary.main', transform: 'scale(1.02)' }
                             }}
                         >
-                            <Typography variant="h6" sx={{ mb: 0.5 }}>{item.icon}</Typography>
+                            <Box sx={{ mb: 0.5, display: 'flex', justifyContent: 'center', color: 'primary.main' }}>{item.icon}</Box>
                             <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.8 }}>{item.label}</Typography>
                         </Box>
                     ))}

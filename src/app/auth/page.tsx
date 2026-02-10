@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { Mail } from 'lucide-react';
 import { SignInForm } from '@/components/auth/SignInForm';
 import { SocialLogins } from '@/components/auth/SocialLogins';
 
@@ -34,9 +35,9 @@ export default function AuthPage() {
             <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col space-y-4 text-center text-sm">
                 <Link
                     href="/auth/magic-link"
-                    className="text-blue-600 hover:text-blue-500 font-medium transition-colors"
+                    className="text-blue-600 hover:text-blue-500 font-medium transition-colors flex items-center justify-center gap-2"
                 >
-                    ✉️ Send Magic Link
+                    <Mail size={18} /> Send Magic Link
                 </Link>
                 <div className="flex justify-between items-center px-2">
                     <Link
